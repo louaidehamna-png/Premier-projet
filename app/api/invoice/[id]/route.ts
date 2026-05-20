@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
+import React from "react";
 import { stripe } from "@/lib/stripe";
 import { getInvoice, markPaid } from "@/lib/store";
 import { InvoicePDF } from "@/components/InvoicePDF";
@@ -50,9 +51,9 @@ export async function GET(
     }
   }
 
-  // Génère le PDF
-  // @ts-expect-error - react-pdf JSX type incompatibility avec React 18
-  const buffer = await renderToBuffer(<InvoicePDF data={invoice.data} />);
+  // Génère le PDF (on utilise createElement car le JSX ne passe pas dans un fichier .ts)
+  const pdfElement = React.createElement(InvoicePDF, { data: invoice.data });
+  const buffer = await renderToBuffer(pdfElement as any);
 
   return new NextResponse(buffer, {
     status: 200,
