@@ -54,8 +54,9 @@ export async function GET(
   // Génère le PDF (on utilise createElement car le JSX ne passe pas dans un fichier .ts)
   const pdfElement = React.createElement(InvoicePDF, { data: invoice.data });
   const buffer = await renderToBuffer(pdfElement as any);
+  const uint8Array = new Uint8Array(buffer);
 
-  return new NextResponse(buffer, {
+  return new NextResponse(uint8Array, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
