@@ -30,20 +30,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF */}
-      <section className="mb-16 grid md:grid-cols-3 gap-4">
-        {[
-          { stars: "★★★★★", text: "Parfait pour ma micro-entreprise. J'ai eu ma facture en 2 minutes.", name: "Karim B." },
-          { stars: "★★★★★", text: "Enfin un service simple et pas cher. Je recommande à tous mes collègues freelances.", name: "Sarah M." },
-          { stars: "★★★★★", text: "Facture pro et conforme, téléchargée immédiatement après le paiement.", name: "Thomas L." },
-        ].map((t, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="text-yellow-400 text-sm mb-2">{t.stars}</div>
-            <p className="text-gray-700 text-sm leading-relaxed mb-3">"{t.text}"</p>
-            <span className="text-xs font-semibold text-gray-400">{t.name}</span>
-          </div>
-        ))}
-      </section>
 
       {/* HOW IT WORKS */}
       <section className="mb-16">
