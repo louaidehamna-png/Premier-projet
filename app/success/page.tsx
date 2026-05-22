@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function SuccessPage() {
+function SuccessContent() {
   const params = useSearchParams();
   const id = params.get("id");
   const sessionId = params.get("session_id");
@@ -25,14 +26,12 @@ export default function SuccessPage() {
       sessionId ? `?session_id=${sessionId}` : ""
     }`;
 
-    // On fait un HEAD pour vérifier la dispo, puis on déclenche le download.
     fetch(url, { method: "GET" })
       .then(async (res) => {
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
           throw new Error(j.error ?? `Erreur ${res.status}`);
         }
-        // Le PDF est dispo : on construit l'URL de téléchargement
         setDownloadUrl(url);
         setStatus("ready");
       })
@@ -89,5 +88,18 @@ export default function SuccessPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-xl mx-auto text-center py-16">
+        <div className="text-5xl mb-4">⏳</div>
+        <h1 className="text-2xl font-bold">Chargement...</h1>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }
