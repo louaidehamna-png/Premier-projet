@@ -377,6 +377,17 @@ export default function InvoiceForm() {
             />
           </div>
         </div>
+        <label className="mt-4 flex items-center gap-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            checked={data.microEntrepreneur ?? false}
+            onChange={(e) => update("microEntrepreneur", e.target.checked)}
+          />
+          <span className="text-sm text-gray-700">
+            Micro-entrepreneur — ajouter <span className="italic text-gray-500">"TVA non applicable, art. 293 B du CGI"</span>
+          </span>
+        </label>
       </div>
 
       {error && (

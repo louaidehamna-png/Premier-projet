@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth *)",
+      "PowerShell(gh auth status)",
+      "PowerShell(git push 2>&1)",
+      "Bash(npm run *)"
+    ]
+  }
+}

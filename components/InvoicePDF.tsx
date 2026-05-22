@@ -217,6 +217,11 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             {data.notes ? (
               <Text style={{ marginTop: 4 }}>{data.notes}</Text>
             ) : null}
+            {data.microEntrepreneur ? (
+              <Text style={{ marginTop: 4, fontStyle: "italic" }}>
+                TVA non applicable, art. 293 B du CGI
+              </Text>
+            ) : null}
           </View>
         )}
 

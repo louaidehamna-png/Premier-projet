@@ -30,6 +30,7 @@ export type InvoiceData = {
   // Mentions
   paymentTerms?: string;
   notes?: string;
+  microEntrepreneur?: boolean;
 };
 
 export type StoredInvoice = {
