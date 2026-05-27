@@ -13,45 +13,30 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
-  const invoice = getInvoice(id);
+  const invoice = await getInvoice(id);
 
   if (!invoice) {
     return NextResponse.json({ error: "Facture introuvable" }, { status: 404 });
   }
 
-  // Vérifie le paiement : soit déjà marqué payé (via webhook),
-  // soit via la session Stripe en query string (?session_id=...) en fallback.
   if (!invoice.paid) {
     const sessionId = req.nextUrl.searchParams.get("session_id");
     if (!sessionId) {
-      return NextResponse.json(
-        { error: "Paiement non confirmé" },
-        { status: 402 }
-      );
+      return NextResponse.json({ error: "Paiement non confirmé" }, { status: 402 });
     }
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
-      if (
-        session.payment_status === "paid" &&
-        session.metadata?.invoiceId === id
-      ) {
-        markPaid(id);
+      if (session.payment_status === "paid" && session.metadata?.invoiceId === id) {
+        await markPaid(id);
       } else {
-        return NextResponse.json(
-          { error: "Paiement non confirmé" },
-          { status: 402 }
-        );
+        return NextResponse.json({ error: "Paiement non confirmé" }, { status: 402 });
       }
     } catch (err) {
       console.error("[/api/invoice/:id] stripe verify", err);
-      return NextResponse.json(
-        { error: "Impossible de vérifier le paiement" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Impossible de vérifier le paiement" }, { status: 500 });
     }
   }
 
-  // Génère le PDF (on utilise createElement car le JSX ne passe pas dans un fichier .ts)
   const pdfElement = React.createElement(InvoicePDF, { data: invoice.data });
   const buffer = await renderToBuffer(pdfElement as any);
 

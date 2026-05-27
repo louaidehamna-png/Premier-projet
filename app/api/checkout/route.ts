@@ -15,10 +15,7 @@ function getAppUrl(req: NextRequest): string {
 export async function POST(req: NextRequest) {
   try {
     const data = (await req.json()) as InvoiceData;
-
-    // Sauvegarde la facture (non payée) -> on récupère un id
-    const invoice = createInvoice(data);
-
+    const invoice = await createInvoice(data);
     const appUrl = getAppUrl(req);
 
     const session = await stripe.checkout.sessions.create({
@@ -39,21 +36,14 @@ export async function POST(req: NextRequest) {
       ],
       success_url: `${appUrl}/success?id=${invoice.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/one-shot?canceled=1`,
-      metadata: {
-        invoiceId: invoice.id,
-      },
+      metadata: { invoiceId: invoice.id },
     });
 
     return NextResponse.json({ url: session.url, id: invoice.id });
   } catch (err) {
     console.error("[/api/checkout]", err);
     return NextResponse.json(
-      {
-        error:
-          err instanceof Error
-            ? err.message
-            : "Erreur lors de la création du paiement",
-      },
+      { error: err instanceof Error ? err.message : "Erreur lors de la création du paiement" },
       { status: 500 }
     );
   }

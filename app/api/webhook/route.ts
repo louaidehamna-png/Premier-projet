@@ -10,10 +10,7 @@ export async function POST(req: NextRequest) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!sig || !webhookSecret) {
-    return NextResponse.json(
-      { error: "Missing signature or webhook secret" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing signature or webhook secret" }, { status: 400 });
   }
 
   const body = await req.text();
@@ -23,17 +20,14 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
     console.error("[/api/webhook] signature error", err);
-    return NextResponse.json(
-      { error: "Invalid signature" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const invoiceId = session.metadata?.invoiceId;
     if (invoiceId) {
-      markPaid(invoiceId);
+      await markPaid(invoiceId);
     }
   }
 
