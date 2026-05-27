@@ -78,7 +78,7 @@ export default function HomePage() {
 
             {/* Features */}
             <ul className="flex flex-wrap gap-x-5 gap-y-2">
-              <CheckItem>PDF en moins de 2 s</CheckItem>
+              <CheckItem>PDF téléchargeable immédiatement</CheckItem>
               <CheckItem>Conforme TVA &amp; mentions légales</CheckItem>
               <CheckItem>Paiement Stripe</CheckItem>
             </ul>
@@ -124,7 +124,7 @@ export default function HomePage() {
           {[
             { n: "01", glyph: "✎", title: "Remplissez",    desc: "Vos infos, celles du client, les lignes. L'éditeur calcule TVA et totaux pendant que vous tapez."      },
             { n: "02", glyph: "€", title: "Payez 1 €",     desc: "CB, Apple Pay ou Google Pay via Stripe. Aucune carte conservée chez nous."                               },
-            { n: "03", glyph: "↓", title: "Téléchargez",   desc: "PDF prêt en moins de 2 s. Une copie part aussi par email à votre adresse."                               },
+            { n: "03", glyph: "↓", title: "Téléchargez",   desc: "PDF généré et disponible immédiatement. Une copie part aussi par email à votre adresse."            },
           ].map((s) => (
             <div key={s.n} className="bg-paper rounded-3xl p-7 shadow-card">
               <div className="flex items-center justify-between mb-6">
