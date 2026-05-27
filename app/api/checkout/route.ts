@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { stripe, INVOICE_PRICE_CENTS } from "@/lib/stripe";
-import { createInvoice } from "@/lib/store";
+import { encodeInvoiceMeta } from "@/lib/store";
 import type { InvoiceData } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -15,7 +16,7 @@ function getAppUrl(req: NextRequest): string {
 export async function POST(req: NextRequest) {
   try {
     const data = (await req.json()) as InvoiceData;
-    const invoice = await createInvoice(data);
+    const invoiceId = randomUUID();
     const appUrl = getAppUrl(req);
 
     const session = await stripe.checkout.sessions.create({
@@ -34,12 +35,15 @@ export async function POST(req: NextRequest) {
           },
         },
       ],
-      success_url: `${appUrl}/success?id=${invoice.id}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${appUrl}/success?id=${invoiceId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/one-shot?canceled=1`,
-      metadata: { invoiceId: invoice.id },
+      metadata: {
+        invoiceId,
+        ...encodeInvoiceMeta(data),
+      },
     });
 
-    return NextResponse.json({ url: session.url, id: invoice.id });
+    return NextResponse.json({ url: session.url, id: invoiceId });
   } catch (err) {
     console.error("[/api/checkout]", err);
     return NextResponse.json(

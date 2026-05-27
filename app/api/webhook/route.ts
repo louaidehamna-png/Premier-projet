@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { markPaid } from "@/lib/store";
 import type Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -25,10 +24,7 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const invoiceId = session.metadata?.invoiceId;
-    if (invoiceId) {
-      await markPaid(invoiceId);
-    }
+    console.log("[webhook] payment confirmed for invoiceId:", session.metadata?.invoiceId);
   }
 
   return NextResponse.json({ received: true });

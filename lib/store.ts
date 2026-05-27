@@ -1,28 +1,59 @@
-import { kv } from "@vercel/kv";
-import type { InvoiceData, StoredInvoice } from "./types";
+/**
+ * Les données de facture sont stockées directement dans les métadonnées
+ * de la session Stripe (découpées en chunks de 450 chars).
+ * Aucune base de données externe requise.
+ */
+import { stripe } from "./stripe";
+import type { InvoiceData } from "./types";
 
-const TTL = 60 * 60 * 24 * 30; // 30 jours
+const CHUNK_SIZE = 450;
 
-function genId(): string {
-  return (
-    Date.now().toString(36) + Math.random().toString(36).slice(2, 10)
-  ).toUpperCase();
+/** Encode l'invoice dans les métadonnées Stripe */
+export function encodeInvoiceMeta(data: InvoiceData): Record<string, string> {
+  const json = JSON.stringify(data);
+  const chunks: Record<string, string> = {};
+  let i = 0;
+  while (i * CHUNK_SIZE < json.length) {
+    chunks[`inv_${i}`] = json.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+    i++;
+  }
+  chunks["inv_n"] = String(i);
+  return chunks;
 }
 
-export async function createInvoice(data: InvoiceData): Promise<StoredInvoice> {
-  const id = genId();
-  const inv: StoredInvoice = { id, data, paid: false, createdAt: Date.now() };
-  await kv.set(`invoice:${id}`, inv, { ex: TTL });
-  return inv;
+/** Reconstruit l'invoice depuis les métadonnées Stripe */
+export function decodeInvoiceMeta(
+  meta: Record<string, string>
+): InvoiceData | null {
+  try {
+    const n = parseInt(meta["inv_n"] ?? "0");
+    if (!n) return null;
+    let json = "";
+    for (let i = 0; i < n; i++) json += meta[`inv_${i}`] ?? "";
+    return JSON.parse(json) as InvoiceData;
+  } catch {
+    return null;
+  }
 }
 
-export async function getInvoice(id: string): Promise<StoredInvoice | undefined> {
-  return (await kv.get<StoredInvoice>(`invoice:${id}`)) ?? undefined;
-}
-
-export async function markPaid(id: string): Promise<void> {
-  const inv = await kv.get<StoredInvoice>(`invoice:${id}`);
-  if (inv) {
-    await kv.set(`invoice:${id}`, { ...inv, paid: true }, { ex: TTL });
+/** Vérifie si une session Stripe est payée et retourne les données */
+export async function getInvoiceFromSession(sessionId: string): Promise<{
+  data: InvoiceData;
+  paid: boolean;
+  invoiceNumber: string;
+} | null> {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const data = decodeInvoiceMeta(
+      (session.metadata ?? {}) as Record<string, string>
+    );
+    if (!data) return null;
+    return {
+      data,
+      paid: session.payment_status === "paid",
+      invoiceNumber: data.invoiceNumber,
+    };
+  } catch {
+    return null;
   }
 }
