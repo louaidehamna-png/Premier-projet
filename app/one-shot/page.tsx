@@ -9,7 +9,7 @@ export default function OneShotPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-brand-900">
-          Votre facture, en 2 minutes
+          Votre facture en un rien de temps
         </h1>
         <p className="mt-2 text-gray-600">
           Remplissez les champs ci-dessous, payez 1 €, et téléchargez votre
